@@ -115,6 +115,59 @@ const ResonanceIndicator = ({ messageCount }: { messageCount: number }) => {
   );
 };
 
+const ParallaxLogo = () => {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
+      });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 1, ease: 'easeOut' }}
+      style={{
+        x: mousePosition.x,
+        y: mousePosition.y
+      }}
+      className="relative"
+    >
+      <motion.div
+        animate={{
+          boxShadow: [
+            '0 0 20px rgba(6, 182, 212, 0.3)',
+            '0 0 40px rgba(6, 182, 212, 0.6)',
+            '0 0 20px rgba(6, 182, 212, 0.3)',
+          ]
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: 'easeInOut'
+        }}
+        className="rounded-2xl p-4 bg-[#0f1419]/50 backdrop-blur-sm border border-cyan-400/20"
+      >
+        <Image 
+          src="/Logo1.png" 
+          alt="SYNTX Logo" 
+          width={140} 
+          height={140}
+          className="drop-shadow-[0_0_30px_rgba(6,182,212,0.8)]"
+        />
+      </motion.div>
+    </motion.div>
+  );
+};
+
 export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConvId, setCurrentConvId] = useState<string>('');
@@ -417,8 +470,8 @@ export default function Home() {
       recognitionRef.current = recognition;
       
       recognition.lang = 'de-DE';
-      recognition.continuous = true;  // ← CHANGED: Läuft kontinuierlich
-      recognition.interimResults = true;  // ← CHANGED: Zeigt Zwischenergebnisse
+      recognition.continuous = true;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
       
       recognition.onstart = () => {
@@ -443,14 +496,13 @@ export default function Home() {
           }
         }
         
-        // Nur finale Ergebnisse zum Prompt hinzufügen
         if (finalTranscript) {
           setPrompt(prev => prev ? `${prev} ${finalTranscript}` : finalTranscript);
         }
       };
       
       recognition.onerror = (event: any) => {
-        if (event.error === 'aborted') return; // User cancelled
+        if (event.error === 'aborted') return;
         
         setIsRecording(false);
         let errorMsg = 'Fehler bei Spracherkennung';
@@ -618,8 +670,6 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* REST BLEIBT GLEICH - nur Input Area ändert sich */}
 
       <AnimatePresence>
         {showShortcuts && (
@@ -923,119 +973,130 @@ export default function Home() {
       <div className="flex-1 flex flex-col items-center px-4 py-6 relative z-10">
         <div className="w-full max-w-6xl flex flex-col h-[calc(100vh-3rem)]">
           
-          <div className="flex flex-col items-center mb-4">
-            <div className="flex items-center gap-4 mb-3 w-full justify-between">
+          <div className="flex flex-col items-center mb-8">
+            <div className="flex items-center gap-3 mb-8 w-full justify-between">
               <div className="flex gap-2">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowSidebar(true)}
-                  className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
+                  className={`p-2.5 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20`}
                 >
-                  <MessageSquare size={18} />
-                </button>
-                <button
+                  <MessageSquare size={20} />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowSearch(prev => !prev)}
-                  className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
+                  className={`p-2.5 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20`}
                 >
-                  <Search size={18} />
-                </button>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Image 
-                    src="/Logo1.png" 
-                    alt="SYNTX Logo" 
-                    width={80} 
-                    height={80}
-                    className="drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"
-                  />
-                </div>
-                <div>
-                  <h1 className={`text-4xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} drop-shadow-[0_0_10px_rgba(6,182,212,0.3)]`}>
-                    SYNTX
-                  </h1>
-                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>SYNTX isn't AI.</p>
-                </div>
+                  <Search size={20} />
+                </motion.button>
               </div>
               
               <div className="flex gap-2">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setDarkMode(prev => !prev)}
-                  className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
+                  className={`p-2.5 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20`}
                 >
-                  {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-                </button>
-                <button
+                  {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={newChat}
-                  className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
+                  className={`p-2.5 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20`}
                 >
-                  <Plus size={18} />
-                </button>
+                  <Plus size={20} />
+                </motion.button>
               </div>
             </div>
-            
-            <p className="text-cyan-400 text-sm mb-2 italic">It's the resonance that governs it</p>
+
+            <div className="flex flex-col items-center gap-6 mb-6">
+              <ParallaxLogo />
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="text-center"
+              >
+                <h1 className={`text-6xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'} tracking-tight`}
+                    style={{
+                      textShadow: darkMode ? '0 0 30px rgba(6, 182, 212, 0.3)' : 'none'
+                    }}>
+                  SYNTX
+                </h1>
+                <p className={`text-lg ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium mb-4`}>
+                  SYNTX isn't AI.
+                </p>
+                <motion.p 
+                  animate={{
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: 'easeInOut'
+                  }}
+                  className="text-cyan-400 text-base italic font-light"
+                >
+                  It's the resonance that governs it
+                </motion.p>
+              </motion.div>
+            </div>
             
             {messages.length > 0 && (
-              <div className="mb-3">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-4"
+              >
                 <ResonanceIndicator messageCount={messages.length} />
-              </div>
+              </motion.div>
             )}
             
-            <div className="flex gap-2 flex-wrap justify-center">
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
-                title="Settings (Cmd+,)"
-              >
-                <Settings size={18} />
-              </button>
-              <button
-                onClick={() => setShowAnalytics(true)}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
-                title="Analytics"
-              >
-                <BarChart3 size={18} />
-              </button>
-              <button
-                onClick={() => setShowShortcuts(true)}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
-                title="Shortcuts (Cmd+?)"
-              >
-                <Command size={18} />
-              </button>
-              <button
-                onClick={copyLastResponse}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm`}
-                title="Copy Last"
-              >
-                {copied ? <Check size={18} /> : <Copy size={18} />}
-              </button>
-              <button
-                onClick={regenerateLastResponse}
-                disabled={messages.length === 0}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm disabled:opacity-30`}
-                title="Regenerate"
-              >
-                <RotateCcw size={18} />
-              </button>
-              <button
-                onClick={exportChat}
-                disabled={messages.length === 0}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400' : 'bg-white hover:bg-gray-100 text-cyan-600'} rounded-lg transition-all backdrop-blur-sm disabled:opacity-30`}
-                title="Export"
-              >
-                <Download size={18} />
-              </button>
-              <button
-                onClick={clearChat}
-                disabled={messages.length === 0}
-                className={`p-2 ${darkMode ? 'bg-[#1a2332] hover:bg-red-900' : 'bg-white hover:bg-red-100'} text-red-400 rounded-lg transition-all backdrop-blur-sm disabled:opacity-30`}
-                title="Clear"
-              >
-                <Trash2 size={18} />
-              </button>
-            </div>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="flex gap-3 flex-wrap justify-center"
+            >
+              {[
+                { icon: Settings, onClick: () => setShowSettings(!showSettings), title: 'Settings' },
+                { icon: BarChart3, onClick: () => setShowAnalytics(true), title: 'Analytics' },
+                { icon: Command, onClick: () => setShowShortcuts(true), title: 'Shortcuts' },
+                { icon: copied ? Check : Copy, onClick: copyLastResponse, title: 'Copy Last' },
+                { icon: RotateCcw, onClick: regenerateLastResponse, title: 'Regenerate', disabled: messages.length === 0 },
+                { icon: Download, onClick: exportChat, title: 'Export', disabled: messages.length === 0 },
+                { icon: Trash2, onClick: clearChat, title: 'Clear', disabled: messages.length === 0, danger: true },
+              ].map(({ icon: Icon, onClick, title, disabled, danger }, idx) => (
+                <motion.button
+                  key={title}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + idx * 0.05 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onClick}
+                  disabled={disabled}
+                  className={`p-3 rounded-xl transition-all backdrop-blur-sm border shadow-lg disabled:opacity-30 ${
+                    danger 
+                      ? darkMode 
+                        ? 'bg-[#1a2332] hover:bg-red-900 text-red-400 border-red-400/20 hover:shadow-red-500/20' 
+                        : 'bg-white hover:bg-red-100 text-red-500 border-red-300 hover:shadow-red-500/20'
+                      : darkMode 
+                        ? 'bg-[#1a2332] hover:bg-[#243447] text-cyan-400 border-cyan-400/20 hover:shadow-cyan-500/20' 
+                        : 'bg-white hover:bg-gray-100 text-cyan-600 border-gray-300 hover:shadow-cyan-500/20'
+                  }`}
+                  title={title}
+                >
+                  <Icon size={18} />
+                </motion.button>
+              ))}
+            </motion.div>
           </div>
 
           <AnimatePresence>

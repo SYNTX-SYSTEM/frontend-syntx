@@ -400,7 +400,6 @@ export default function Home() {
   const startVoiceInput = () => {
     setVoiceError(null);
     
-    // Check for API support
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
@@ -418,8 +417,8 @@ export default function Home() {
       recognitionRef.current = recognition;
       
       recognition.lang = 'de-DE';
-      recognition.continuous = false;
-      recognition.interimResults = false;
+      recognition.continuous = true;  // ← CHANGED: Läuft kontinuierlich
+      recognition.interimResults = true;  // ← CHANGED: Zeigt Zwischenergebnisse
       recognition.maxAlternatives = 1;
       
       recognition.onstart = () => {
@@ -432,12 +431,27 @@ export default function Home() {
       };
       
       recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setPrompt(prev => prev ? `${prev} ${transcript}` : transcript);
-        textareaRef.current?.focus();
+        let interimTranscript = '';
+        let finalTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        // Nur finale Ergebnisse zum Prompt hinzufügen
+        if (finalTranscript) {
+          setPrompt(prev => prev ? `${prev} ${finalTranscript}` : finalTranscript);
+        }
       };
       
       recognition.onerror = (event: any) => {
+        if (event.error === 'aborted') return; // User cancelled
+        
         setIsRecording(false);
         let errorMsg = 'Fehler bei Spracherkennung';
         
@@ -450,10 +464,8 @@ export default function Home() {
             errorMsg = 'Keine Sprache erkannt. Bitte versuche es erneut.';
             break;
           case 'network':
-            errorMsg = 'Netzwerkfehler. Bitte überprüfe deine Internetverbindung.';
+            errorMsg = 'Netzwerkfehler. Nutze Chrome/Edge für beste Ergebnisse.';
             break;
-          case 'aborted':
-            return; // User cancelled, don't show error
           default:
             errorMsg = `Spracherkennung Fehler: ${event.error}`;
         }
@@ -594,7 +606,6 @@ export default function Home() {
     <main className={`min-h-screen ${bgClass} flex relative transition-colors duration-500`}>
       <ParticleBackground intensity={particleIntensity} />
       
-      {/* Voice Error Toast */}
       <AnimatePresence>
         {voiceError && (
           <motion.div
@@ -608,7 +619,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* REST OF THE CODE CONTINUES... */}
+      {/* REST BLEIBT GLEICH - nur Input Area ändert sich */}
 
       <AnimatePresence>
         {showShortcuts && (
@@ -1238,7 +1249,7 @@ export default function Home() {
                     ? 'bg-[#1a2332] text-white placeholder-gray-500 border-cyan-400/20 shadow-[0_0_20px_rgba(6,182,212,0.1)]'
                     : 'bg-white text-gray-900 placeholder-gray-400 border-gray-300 shadow-md'
                 }`}
-                disabled={loading}
+                disabled={loading || isRecording}
                 rows={1}
               />
               
@@ -1246,25 +1257,26 @@ export default function Home() {
                 {isRecording ? (
                   <button
                     onClick={stopVoiceInput}
-                    className="px-4 py-2.5 bg-red-500 text-white rounded-lg transition-all font-medium text-sm animate-pulse flex items-center gap-2"
+                    className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all font-medium text-sm flex items-center gap-2 animate-pulse shadow-lg shadow-red-500/50"
                     title="Stop Recording"
                   >
                     <MicOff size={18} />
-                    Stop
+                    <span className="hidden sm:inline">Stop</span>
                   </button>
                 ) : (
                   <button
                     onClick={startVoiceInput}
                     disabled={loading}
-                    className="px-4 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-30 font-medium text-sm"
-                    title="Voice Input"
+                    className="px-4 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-30 font-medium text-sm flex items-center gap-2"
+                    title="Voice Input (Continuous)"
                   >
                     <Mic size={18} />
+                    <span className="hidden sm:inline">Sprechen</span>
                   </button>
                 )}
                 <button
                   onClick={handleSubmit}
-                  disabled={loading || !prompt.trim()}
+                  disabled={loading || !prompt.trim() || isRecording}
                   className="px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg hover:from-cyan-600 hover:to-cyan-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed font-medium text-sm shadow-lg shadow-cyan-500/50"
                 >
                   {loading ? 'Sendet...' : 'Senden'}
@@ -1274,6 +1286,7 @@ export default function Home() {
             
             <p className={`text-xs mt-2 text-center ${darkMode ? 'text-gray-600' : 'text-gray-500'}`}>
               Cmd/Ctrl+Enter zum Senden · {messages.length} Messages · {conversations.length} Konversationen
+              {isRecording && <span className="ml-2 text-red-400 animate-pulse">● Aufnahme läuft...</span>}
             </p>
           </div>
         </div>

@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Copy, Download, RotateCcw, Settings, Trash2, Check, Plus, MessageSquare, X,
   Search, Pin, Mic, Moon, Sun, BarChart3, ThumbsUp, ThumbsDown, Command,
-  Edit2, Save, Zap, Activity, TrendingUp, Upload
+  Edit2, Save, Zap, Activity, TrendingUp, Upload, MicOff
 } from 'lucide-react';
 
 interface Message {
@@ -132,6 +132,7 @@ export default function Home() {
   const [isRecording, setIsRecording] = useState(false);
   const [editingTitle, setEditingTitle] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   
   const [maxTokens, setMaxTokens] = useState(500);
   const [temperature, setTemperature] = useState(0.7);
@@ -140,6 +141,7 @@ export default function Home() {
   
   const chatRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     const currentConv = conversations.find(c => c.id === currentConvId);
@@ -396,24 +398,83 @@ export default function Home() {
   };
 
   const startVoiceInput = () => {
-    if (!('webkitSpeechRecognition' in window)) {
-      alert('Speech recognition nicht verfügbar in diesem Browser.');
+    setVoiceError(null);
+    
+    // Check for API support
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      setVoiceError('Speech Recognition nicht unterstützt in diesem Browser. Nutze Chrome, Edge oder Safari.');
+      setTimeout(() => setVoiceError(null), 5000);
       return;
     }
     
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.lang = 'de-DE';
-    recognition.continuous = false;
-    
-    recognition.onstart = () => setIsRecording(true);
-    recognition.onend = () => setIsRecording(false);
-    
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setPrompt(prev => prev + ' ' + transcript);
-    };
-    
-    recognition.start();
+    try {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      
+      recognition.lang = 'de-DE';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      
+      recognition.onstart = () => {
+        setIsRecording(true);
+        setVoiceError(null);
+      };
+      
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setPrompt(prev => prev ? `${prev} ${transcript}` : transcript);
+        textareaRef.current?.focus();
+      };
+      
+      recognition.onerror = (event: any) => {
+        setIsRecording(false);
+        let errorMsg = 'Fehler bei Spracherkennung';
+        
+        switch(event.error) {
+          case 'not-allowed':
+          case 'permission-denied':
+            errorMsg = 'Mikrofon-Zugriff verweigert. Bitte erlaube Mikrofon-Zugriff in den Browser-Einstellungen.';
+            break;
+          case 'no-speech':
+            errorMsg = 'Keine Sprache erkannt. Bitte versuche es erneut.';
+            break;
+          case 'network':
+            errorMsg = 'Netzwerkfehler. Bitte überprüfe deine Internetverbindung.';
+            break;
+          case 'aborted':
+            return; // User cancelled, don't show error
+          default:
+            errorMsg = `Spracherkennung Fehler: ${event.error}`;
+        }
+        
+        setVoiceError(errorMsg);
+        setTimeout(() => setVoiceError(null), 5000);
+      };
+      
+      recognition.start();
+    } catch (error) {
+      setIsRecording(false);
+      setVoiceError('Fehler beim Starten der Spracherkennung.');
+      setTimeout(() => setVoiceError(null), 5000);
+    }
+  };
+
+  const stopVoiceInput = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsRecording(false);
   };
 
   const filteredConversations = conversations
@@ -533,6 +594,22 @@ export default function Home() {
     <main className={`min-h-screen ${bgClass} flex relative transition-colors duration-500`}>
       <ParticleBackground intensity={particleIntensity} />
       
+      {/* Voice Error Toast */}
+      <AnimatePresence>
+        {voiceError && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-4 right-4 z-50 bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-md"
+          >
+            <p className="text-sm font-medium">{voiceError}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* REST OF THE CODE CONTINUES... */}
+
       <AnimatePresence>
         {showShortcuts && (
           <motion.div
@@ -1166,18 +1243,25 @@ export default function Home() {
               />
               
               <div className="absolute bottom-4 right-4 flex gap-2">
-                <button
-                  onClick={startVoiceInput}
-                  disabled={loading}
-                  className={`px-4 py-2.5 rounded-lg transition-all disabled:opacity-30 font-medium text-sm ${
-                    isRecording 
-                      ? 'bg-red-500 text-white animate-pulse' 
-                      : 'bg-gray-600 hover:bg-gray-700 text-white'
-                  }`}
-                  title="Voice Input"
-                >
-                  <Mic size={18} />
-                </button>
+                {isRecording ? (
+                  <button
+                    onClick={stopVoiceInput}
+                    className="px-4 py-2.5 bg-red-500 text-white rounded-lg transition-all font-medium text-sm animate-pulse flex items-center gap-2"
+                    title="Stop Recording"
+                  >
+                    <MicOff size={18} />
+                    Stop
+                  </button>
+                ) : (
+                  <button
+                    onClick={startVoiceInput}
+                    disabled={loading}
+                    className="px-4 py-2.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all disabled:opacity-30 font-medium text-sm"
+                    title="Voice Input"
+                  >
+                    <Mic size={18} />
+                  </button>
+                )}
                 <button
                   onClick={handleSubmit}
                   disabled={loading || !prompt.trim()}

@@ -1,7 +1,10 @@
 'use client';
 
+import { useAuth } from "@clerk/nextjs";
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import LogoutButton from "@/components/LogoutButton";
+
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -169,6 +172,12 @@ const ParallaxLogo = () => {
 };
 
 export default function Home() {
+   const { userId } = useAuth();
+
+  if (!userId) {
+    return <div className="p-4 text-center">Loading...</div>;
+  }
+
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConvId, setCurrentConvId] = useState<string>('');
   const [prompt, setPrompt] = useState('');
@@ -205,7 +214,12 @@ export default function Home() {
     }
   }, [currentConvId, conversations]);
 
-  useEffect(() => {
+  <div className="flex gap-2">
+  	<LogoutButton />
+  </div>
+  
+
+useEffect(() => {
     const stored = localStorage.getItem('syntx-conversations');
     const storedDarkMode = localStorage.getItem('syntx-darkmode');
     
@@ -345,16 +359,13 @@ export default function Home() {
     setLoading(true);
     
     try {
-      const res = await fetch('https://dev.syntx-system.com/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: prompt,
-          max_new_tokens: maxTokens,
-          temperature: temperature,
-          top_p: topP,
-          do_sample: true
-        })
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId || ""
+        },
+        body: JSON.stringify({ prompt })
       });
 
       if (!res.ok) throw new Error(`API Error: ${res.status}`);

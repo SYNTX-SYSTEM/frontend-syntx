@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "SYNTX - Resonance System",
@@ -11,14 +12,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="de">
-      <body className="antialiased">
-        {children}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="de">
+        <body className="antialiased">{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }

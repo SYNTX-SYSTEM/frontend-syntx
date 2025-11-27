@@ -975,7 +975,7 @@ export default function Home() {
         <div className="w-full max-w-6xl flex flex-col h-[calc(100vh-3rem)]">
           
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center gap-3 mb-8 w-full justify-between">
+            <div className="w-full px-4 flex items-center gap-3 mb-8 w-full justify-between">
               <div className="flex gap-2">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -1014,16 +1014,16 @@ export default function Home() {
                 </motion.button>
               </div>
               // ---------- START LOGOUT BLOCK ----------
-              <div className="flex gap-2">
+              <div id="logoutlink" className="ml-auto flex gap-3">
                 <SignedIn>
                   <motion.div
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`p-1.5 ${darkMode ? 'bg-[#1a2332] text-cyan-400' : 'bg-white text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20 flex items-center gap-1`}
+                    className={`p-1.5 ${darkMode ? 'bg-[#1a2332] text-cyan-400' : 'bg-white text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20 flex items-right gap-1`}
                     title="User-Einstellungen / Abmelden"
                   >
-                    {/* 1. CLERK USER BUTTON: Für Dropdown-Profil */}
-                    <UserButton afterSignOutUrl="/" /> 
+                 {/*    {/* 1. CLERK USER BUTTON: Für Dropdown-Profil */}
+                    {/* <UserButton afterSignOutUrl="/" />  */} 
                     
                     {/* 2. MINIMALISTISCHER LOGOUT BUTTON */}
                     <SignOutButton>

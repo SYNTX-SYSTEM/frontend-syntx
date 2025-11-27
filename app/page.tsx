@@ -10,8 +10,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Copy, Download, RotateCcw, Settings, Trash2, Check, Plus, MessageSquare, X,
   Search, Pin, Mic, Moon, Sun, BarChart3, ThumbsUp, ThumbsDown, Command,
-  Edit2, Save, Zap, Activity, TrendingUp, Upload, MicOff
+  Edit2, Save, Zap, Activity, TrendingUp, Upload, MicOff, LogOut
 } from 'lucide-react';
+import { SignOutButton, UserButton, SignedIn } from '@clerk/nextjs';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -1012,6 +1013,28 @@ export default function Home() {
                   <Plus size={20} />
                 </motion.button>
               </div>
+              // ---------- START LOGOUT BLOCK ----------
+              <div className="flex gap-2">
+                <SignedIn>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`p-1.5 ${darkMode ? 'bg-[#1a2332] text-cyan-400' : 'bg-white text-cyan-600'} rounded-xl transition-all backdrop-blur-sm border ${darkMode ? 'border-cyan-400/20' : 'border-gray-300'} shadow-lg hover:shadow-cyan-500/20 flex items-center gap-1`}
+                    title="User-Einstellungen / Abmelden"
+                  >
+                    {/* 1. CLERK USER BUTTON: Für Dropdown-Profil */}
+                    <UserButton afterSignOutUrl="/" /> 
+                    
+                    {/* 2. MINIMALISTISCHER LOGOUT BUTTON */}
+                    <SignOutButton>
+                        <button className={`p-1 rounded-lg ${darkMode ? 'text-red-400 hover:bg-red-900/50' : 'text-red-500 hover:bg-red-100'} transition-colors`} title="Abmelden">
+                            <LogOut size={20} />
+                        </button>
+                    </SignOutButton>
+                  </motion.div>
+                </SignedIn>
+              </div>
+              // ---------- ENDE LOGOUT BLOCK ----------
             </div>
 
             <div className="flex flex-col items-center gap-6 mb-6">

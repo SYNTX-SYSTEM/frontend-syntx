@@ -1,0 +1,8 @@
+127.0.0.1 - - [08/Dec/2025 21:36:03] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [08/Dec/2025 21:36:03] "GET /styles/syntx-core.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/Dec/2025 21:36:03] "GET /fields/LogoField.js HTTP/1.1" 304 -
+127.0.0.1 - - [08/Dec/2025 21:37:34] "GET / HTTP/1.1" 304 -
+127.0.0.1 - - [08/Dec/2025 21:37:34] "GET /styles/syntx-core.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/Dec/2025 21:37:34] "GET /styles/field-transitions.css HTTP/1.1" 304 -
+127.0.0.1 - - [08/Dec/2025 21:37:34] "GET /fields/LogoField.js HTTP/1.1" 200 -
+127.0.0.1 - - [08/Dec/2025 21:37:34] "GET /assets/logo.svg HTTP/1.1" 200 -

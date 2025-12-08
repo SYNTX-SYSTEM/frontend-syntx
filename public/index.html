@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SYNTX | Resonance Dashboard</title>
+  <link rel="stylesheet" href="./styles/syntx-core.css">
+  <link rel="stylesheet" href="./styles/field-transitions.css">
+</head>
+<body>
+  <div id="field-container" class="field-container"></div>
+
+  <script type="module">
+    import LogoField from '../fields/LogoField.js';
+    
+    const logoField = new LogoField('field-container');
+    logoField.enter();
+    
+    console.log('🔥 SYNTX Frontend – LogoField aktiv.');
+    
+    // Später: FieldManager steuert Übergänge
+    // Beispiel: Nach 3 Sekunden zu HeartField wechseln
+    // setTimeout(() => fieldManager.switchTo('heart'), 3000);
+  </script>
+</body>
+</html>

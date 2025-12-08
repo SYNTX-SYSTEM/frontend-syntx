@@ -1,0 +1,58 @@
+:root {
+  --darkest: #03050f;
+  --gold: #FFD700;
+  --gold-glow: rgba(255, 215, 0, 0.7);
+  --neon-glow: 0 0 25px var(--gold-glow);
+}
+
+body {
+  background-color: var(--darkest);
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  color: white;
+}
+
+.field-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-wrapper {
+  text-align: center;
+}
+
+#syntx-logo {
+  width: 300px;
+  height: auto;
+  filter: drop-shadow(var(--neon-glow));
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.05); }
+}
+
+.slogan {
+  color: #B8C5D6;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.cookie-hint {
+  color: #6B7A8F;
+  font-size: 0.9rem;
+  margin-top: 40px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.cookie-hint:hover {
+  color: var(--gold);
+}

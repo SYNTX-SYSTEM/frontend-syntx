@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# runtime / dumps
+server.log
+NEXTJS_DUMP.txt
+
+# local backups
+public/index_backup.html
